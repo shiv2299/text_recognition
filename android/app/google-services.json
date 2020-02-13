@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "830334964531",
+    "firebase_url": "https://textrecognition-41665.firebaseio.com",
+    "project_id": "textrecognition-41665",
+    "storage_bucket": "textrecognition-41665.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:830334964531:android:d938d8b98154cfba25a446",
+        "android_client_info": {
+          "package_name": "shivam.example.com.text_recognition"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "830334964531-vjahqr9eejqap6ml56uhrtdeddacbvhv.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCOM7PQQxYi7MJR7acSQeB2kL1dmT-Kixg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "830334964531-vjahqr9eejqap6ml56uhrtdeddacbvhv.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
