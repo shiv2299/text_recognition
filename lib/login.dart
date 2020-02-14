@@ -1,33 +1,70 @@
 import 'package:flip_card/flip_card.dart';
 import 'package:flutter/material.dart';
-import 'package:text_recognition/PickImage.dart';
-import 'package:text_recognition/signup.dart';
+
+import 'BaseAuth.dart';
 
 class login extends StatefulWidget{
   GlobalKey<FlipCardState> cardKey;
-  login(this.cardKey);
+  final BaseAuth auth;
+  final VoidCallback loginCallback;
+  login(this.cardKey, this.auth, this.loginCallback);
   @override
   loginState createState() {
-    return loginState(cardKey);
+    return loginState();
   }
 }
 class loginState extends State<login>{
-  GlobalKey<FlipCardState> cardKey;
-  loginState(this.cardKey);
   double screenHeight;
   String link_text="Don't have account? Sign Up";
+  String _email;
+  String _password;
+  String _errorMessage;
+  bool _isLoading;
   final _formKey = GlobalKey<FormState>();
+
+  @override
+  void initState() {
+    _errorMessage = "";
+    _isLoading = false;
+    super.initState();
+  }
+
+  void resetForm() {
+    _formKey.currentState.reset();
+    _errorMessage = "";
+  }
   void flip(){
-    cardKey.currentState.toggleCard();
+    widget.cardKey.currentState.toggleCard();
   }
 
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
-  void loginFun(){
-    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => PickImage(emailController.text) ));
+  void loginFun() async {
+    setState(() {
+      _errorMessage = "";
+      _isLoading = true;
+    });
+    String userId="";
+    try{
+      userId = await widget.auth.signIn(_email, _password);
+      print('Signed in: $userId');
+      setState(() {
+        _isLoading = false;
+      });
+      if (userId.length > 0 && userId != null)
+        widget.loginCallback();
+      //Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => PickImage(emailController.text) ));
+    }
+    catch(e){
+      print('Error: $e');
+      setState(() {
+        _isLoading = false;
+        _errorMessage = e.message;
+        _formKey.currentState.reset();
+      });
+    }
   }
-
   @override
   Widget build(BuildContext context) {
 
@@ -52,6 +89,7 @@ class loginState extends State<login>{
         } else
           return null;
       },
+      onSaved: (value) => _email = value.trim(),
       controller: emailController,
     );
 
@@ -67,6 +105,7 @@ class loginState extends State<login>{
       ),
       validator: (val) => val.isEmpty ? "Password Required" : null,
       controller: passwordController,
+      onSaved: (value) => _password = value.trim(),
     );
 
     final loginButton = Padding(
@@ -77,6 +116,7 @@ class loginState extends State<login>{
         ),
         onPressed: () {
           if (_formKey.currentState.validate()) {
+            _formKey.currentState.save();
             loginFun();
           }
         },
@@ -97,6 +137,23 @@ class loginState extends State<login>{
       onPressed: () {},
       splashColor: Colors.white,
     );
+    Widget showErrorMessage() {
+      if (_errorMessage.length > 0 && _errorMessage != null) {
+        return new Text(
+          _errorMessage,
+          style: TextStyle(
+              fontFamily: 'Hero',
+              fontSize: 13.0,
+              color: Colors.red,
+              height: 1.0,
+              fontWeight: FontWeight.w300),
+        );
+      } else {
+        return new Container(
+          height: 0.0,
+        );
+      }
+    }
     return Form(
         key: _formKey,
         child: Center(
@@ -115,11 +172,11 @@ class loginState extends State<login>{
                 password,
                 SizedBox(height: 24.0),
                 loginButton,
+                showErrorMessage(),
                 forgot_btn,
                 SizedBox(height: 8.0),
                 signup_btn
               ],
-
             ),
           ),
         ),

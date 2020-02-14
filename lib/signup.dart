@@ -1,24 +1,85 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flip_card/flip_card.dart';
 import 'package:flutter/material.dart';
-
+import 'BaseAuth.dart';
 class signup extends StatefulWidget{
+  BaseAuth auth;
+  VoidCallback loginCallback;
   GlobalKey<FlipCardState> cardKey;
-  signup(this.cardKey);
+  signup(this.cardKey, this.auth, this.loginCallback);
   @override
   signupState createState() {
-    return signupState(cardKey);
+    return signupState();
   }
 }
 class signupState extends State<signup>{
-  GlobalKey<FlipCardState> cardKey;
-  signupState(this.cardKey);
   double screenHeight;
-  String link_text="Already have account? Login"
-      "";
+  String link_text="Already have account? Login";
+  String _email;
+  String _password;
+  String _phone;
+  String _name;
+  String _errorMessage;
+  String userId;
+  bool _isLoading;
+  final databaseReference = Firestore.instance;
   final _formKey = GlobalKey<FormState>();
-  void flip(){
-    cardKey.currentState.toggleCard();
+
+  @override
+  void initState() {
+    _errorMessage = "";
+    _isLoading = false;
+    super.initState();
   }
+
+  void resetForm() {
+    _formKey.currentState.reset();
+    _errorMessage = "";
+  }
+  void flip(){
+    widget.cardKey.currentState.toggleCard();
+  }
+
+  void createRecord() async {
+    await databaseReference.collection("users")
+        .document(userId)
+        .setData({
+      'Email': _email,
+      'Name': _name,
+      'Password':_password,
+      'Phone':_phone,
+    });
+  }
+
+  void loginFun() async {
+    setState(() {
+      _errorMessage = "";
+      _isLoading = true;
+    });
+    userId="";
+    try{
+      userId = await widget.auth.signUp(_email, _password);
+      createRecord();
+      print('Signed up: $userId');
+      setState(() {
+        _isLoading = false;
+      });
+      if (userId.length > 0 && userId != null)
+        widget.loginCallback();
+      //Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => PickImage(emailController.text) ));
+    }
+    catch(e){
+      print('Error: $e');
+      setState(() {
+        _isLoading = false;
+        _errorMessage = e.message;
+        _formKey.currentState.reset();
+      });
+    }
+  }
+
+
+
   @override
   Widget build(BuildContext context) {
 
@@ -38,6 +99,7 @@ class signupState extends State<signup>{
         else
           return null;
       },
+      onSaved: (value) => _name = value.trim(),
     );
     final email = TextFormField(
       style: TextStyle(fontFamily: 'Hero'),
@@ -59,6 +121,7 @@ class signupState extends State<signup>{
         } else
           return null;
       },
+      onSaved: (value) => _email = value.trim(),
     );
 
     final phone = TextFormField(
@@ -79,6 +142,7 @@ class signupState extends State<signup>{
         } else
           return null;
       },
+      onSaved: (value) => _phone = value.trim(),
     );
 
     final password = TextFormField(
@@ -92,6 +156,7 @@ class signupState extends State<signup>{
         prefixIcon: Icon(Icons.lock),
       ),
       validator: (val) => val.isEmpty ? "Password Required" : null,
+      onSaved: (value) => _password = value.trim(),
     );
 
     final loginButton = Padding(
@@ -101,7 +166,10 @@ class signupState extends State<signup>{
           borderRadius: BorderRadius.circular(24),
         ),
         onPressed: () {
-          if (_formKey.currentState.validate()) {}
+          if (_formKey.currentState.validate()) {
+            _formKey.currentState.save();
+            loginFun();
+          }
         },
         padding: EdgeInsets.all(12),
         color: Colors.blue,
@@ -114,6 +182,23 @@ class signupState extends State<signup>{
       onPressed: flip,
       splashColor: Colors.white,
     );
+    Widget showErrorMessage() {
+      if (_errorMessage.length > 0 && _errorMessage != null) {
+        return new Text(
+          _errorMessage,
+          style: TextStyle(
+              fontFamily: 'Hero',
+              fontSize: 13.0,
+              color: Colors.red,
+              height: 1.0,
+              fontWeight: FontWeight.w300),
+        );
+      } else {
+        return new Container(
+          height: 0.0,
+        );
+      }
+    }
     return Form(
       key: _formKey,
       child: Center(
@@ -136,13 +221,13 @@ class signupState extends State<signup>{
               password,
               SizedBox(height: 24.0),
               loginButton,
+              showErrorMessage(),
               SizedBox(height: 8.0),
               signup_btn
             ],
           ),
         ),
       ),
-      autovalidate: true,
     );
   }
 }

@@ -6,9 +6,15 @@ import 'package:image_picker/image_picker.dart';
 import 'package:mlkit/mlkit.dart';
 import 'dart:ui';
 
+import 'BaseAuth.dart';
+
 class PickImage extends StatefulWidget{
-  var email;
-  PickImage(this.email);
+  PickImage({this.auth, this.userId, this.logoutCallback});
+
+
+  final BaseAuth auth;
+  final VoidCallback logoutCallback;
+  final String userId;
   @override
   PickImageState createState() {
     return PickImageState();
@@ -45,7 +51,13 @@ class PickImageState extends State<PickImage>{
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Text Recognition",style: TextStyle(fontFamily: "Hero",fontWeight: FontWeight.bold),),
+        title: Text(
+          "Text Recognition",
+          style: TextStyle(
+              fontFamily: "Hero",
+              fontWeight: FontWeight.bold
+          ),
+        ),
       ),
       body: Column(
         children: <Widget>[
@@ -175,7 +187,6 @@ class _TextDetectPainter extends BoxPainter {
     final _widthRatio = _originalImageSize.width / configuration.size.width;
     print(_texts);
     for (var text in _texts) {
-       print("text : ${text.text}, rect : ${text.rect}");
       final _rect = Rect.fromLTRB(
           offset.dx + text.rect.left / _widthRatio-5,
           offset.dy + text.rect.top / _heightRatio-5,
