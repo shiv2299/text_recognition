@@ -6,7 +6,7 @@ import 'package:text_recognition/signup.dart';
 
 import 'BaseAuth.dart';
 
-class RootPage extends StatefulWidget{
+class RootPage extends StatefulWidget {
   RootPage({this.auth});
 
   final BaseAuth auth;
@@ -15,11 +15,13 @@ class RootPage extends StatefulWidget{
     return RootPageState();
   }
 }
+
 enum AuthStatus {
   NOT_DETERMINED,
   NOT_LOGGED_IN,
   LOGGED_IN,
 }
+
 class RootPageState extends State<RootPage> {
   GlobalKey<FlipCardState> cardKey = GlobalKey<FlipCardState>();
   AuthStatus authStatus = AuthStatus.NOT_DETERMINED;
@@ -33,10 +35,11 @@ class RootPageState extends State<RootPage> {
           _userId = user?.uid;
         }
         authStatus =
-        user?.uid == null ? AuthStatus.NOT_LOGGED_IN : AuthStatus.LOGGED_IN;
+            user?.uid == null ? AuthStatus.NOT_LOGGED_IN : AuthStatus.LOGGED_IN;
       });
     });
   }
+
   void loginCallback() {
     widget.auth.getCurrentUser().then((user) {
       setState(() {
@@ -47,12 +50,14 @@ class RootPageState extends State<RootPage> {
       authStatus = AuthStatus.LOGGED_IN;
     });
   }
+
   void logoutCallback() {
     setState(() {
       authStatus = AuthStatus.NOT_LOGGED_IN;
       _userId = "";
     });
   }
+
   Widget buildWaitingScreen() {
     return Scaffold(
       body: Container(
@@ -61,6 +66,7 @@ class RootPageState extends State<RootPage> {
       ),
     );
   }
+
   @override
   Widget build(BuildContext context) {
     switch (authStatus) {
@@ -68,14 +74,18 @@ class RootPageState extends State<RootPage> {
         return buildWaitingScreen();
         break;
       case AuthStatus.NOT_LOGGED_IN:
-        return CardDesign(auth: widget.auth, loginCallback: loginCallback,);
+        return CardDesign(
+          auth: widget.auth,
+          loginCallback: loginCallback,
+        );
         break;
       case AuthStatus.LOGGED_IN:
         if (_userId.length > 0 && _userId != null) {
           return new PickImage(
             userId: _userId,
             auth: widget.auth,
-            logoutCallback: logoutCallback,);
+            logoutCallback: logoutCallback,
+          );
         } else
           return buildWaitingScreen();
         break;
